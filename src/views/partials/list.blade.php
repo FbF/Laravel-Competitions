@@ -47,7 +47,7 @@
 	@else
 
 		<p class="item-list--empty">
-			{{ trans('laravel-blog::messages.list.no_items') }}
+			{{ trans('laravel-competitions::messages.list.no_items') }}
 		</p>
 
 	@endif
