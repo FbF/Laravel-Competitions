@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('page_title')
+@section('title')
 	Competitions
 @endsection
 
