@@ -63,6 +63,28 @@ class Competition extends \Eloquent {
 	}
 
 	/**
+	 * Query scope for "open" items, adds conditions for closing date is in the future
+	 *
+	 * @param $query
+	 * @return mixed
+	 */
+	public function scopeOpen($query)
+	{
+		return $query->where($this->getTable().'.closing_date', '>=', \Carbon\Carbon::now());
+	}
+
+	/**
+	 * Query scope for "open" items, adds conditions for closing date is in the future
+	 *
+	 * @param $query
+	 * @return mixed
+	 */
+	public function scopeClosed($query)
+	{
+		return $query->where($this->getTable().'.closing_date', '<=', \Carbon\Carbon::now());
+	}
+
+	/**
 	 * Returns the HTML img tag for the requested image type and size for this item
 	 *
 	 * @param $type
