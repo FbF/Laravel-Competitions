@@ -453,7 +453,7 @@ class Competition extends \Eloquent {
 			return false;
 		}
 		$entryClass = $this->entries()->getModel();
-		return (bool)$entryClass::where('user_id', '=', !\Auth::user()->id)->count();
+		return (bool)$entryClass::where('user_id', '=', \Auth::user()->id)->count();
 	}
 
 	/**

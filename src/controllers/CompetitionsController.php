@@ -47,7 +47,7 @@ class CompetitionsController extends \BaseController {
 		}
 
 		// Check if submitted data is valid
-		$validator = \Validator::make(\Input::all(), $this->competition->getValidationRules(), $this->competition->getCustomValidationMessages());
+		$validator = \Validator::make(\Input::all(), $competition->getValidationRules(), $competition->getCustomValidationMessages());
 		if ($validator->fails())
 		{
 			return \Redirect::action('Fbf\LaravelCompetitions\CompetitionsController@view', array('slug' => $slug))->with('fbf_competitions_error_message', $competition::INVALID)->withErrors($validator);
