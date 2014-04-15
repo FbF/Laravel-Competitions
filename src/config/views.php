@@ -6,14 +6,6 @@
 return array(
 
 	/**
-	 * Date format for published date, shown on partials.list and partials.details. Should be
-	 * a valid date() format string, e.g.
-	 *
-	 * @type string
-	 */
-	'closing_date_format' => '%e %B %Y',
-
-	/**
 	 * Configuration options for the index page
 	 */
 	'index_page' => array(

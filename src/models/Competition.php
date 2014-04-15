@@ -1,5 +1,13 @@
 <?php namespace Fbf\LaravelCompetitions;
 
+use \Config,
+	\Lang,
+	\Auth,
+	\Crypt,
+	\Session,
+	\URL,
+	\App;
+
 class Competition extends \Eloquent {
 
 	/**
@@ -210,19 +218,40 @@ class Competition extends \Eloquent {
 			$config .= 'sizes.' . $size . '.';
 		}
 		$config .= $property;
-		return \Config::get($config);
+		return Config::get($config);
 	}
 
 	/**
-	 * Returns the closing date formatted according to the config setting, according to the current locale
+	 * Returns the locale formatted closing date, in the locale's timezone, both of which can be overridden in the language file
 	 * @return string
 	 */
 	public function getFormattedClosingDate()
 	{
-		$closingDate = $this->getClosingDateAsCarbonInstance();
-		setlocale(LC_TIME, \App::getLocale());
-		$closingDate = $closingDate->formatLocalized(\Config::get($this->getConfigPrefix().'views.closing_date_format'));
-		return $closingDate;
+		$date = $this->getClosingDateAsCarbonInstance();
+		if (Lang::has('laravel-competitions::messages.closing_date.timezone'))
+		{
+			$oldTimezone = date_default_timezone_get();
+			$newTimezone = Lang::get('laravel-competitions::messages.closing_date.timezone');
+			$date->setTimezone($newTimezone);
+			date_default_timezone_set($newTimezone);
+		}
+		$locale = App::getLocale();
+		if (Lang::has('laravel-competitions::messages.closing_date.locale'))
+		{
+			$locale = Lang::get('laravel-competitions::messages.closing_date.locale');
+		}
+		setlocale(LC_TIME, $locale);
+		$dateFormat = trans('laravel-competitions::messages.closing_date.format');
+		if ($dateFormat == 'laravel-competitions::messages.closing_date.format')
+		{
+			$dateFormat = '%e %B %Y at %H:%M';
+		}
+		$date = $date->formatLocalized($dateFormat);
+		if (Lang::has('laravel-competitions::messages.closing_date.timezone'))
+		{
+			date_default_timezone_set($oldTimezone);
+		}
+		return $date;
 	}
 
 	/**
@@ -250,7 +279,7 @@ class Competition extends \Eloquent {
 	 */
 	public function getUrl()
 	{
-		return \URL::action('Fbf\LaravelCompetitions\CompetitionsController@view', array('slug' => $this->slug));
+		return URL::action('Fbf\LaravelCompetitions\CompetitionsController@view', array('slug' => $this->slug));
 	}
 
 	/**
@@ -284,20 +313,20 @@ class Competition extends \Eloquent {
 	 */
 	public function getAnswers()
 	{
-		if (\Session::has('competitions.'.$this->id.'.answers'))
+		if (Session::has('competitions.'.$this->id.'.answers'))
 		{
-			return \Session::get('competitions.'.$this->id.'.answers');
+			return Session::get('competitions.'.$this->id.'.answers');
 		}
 
 		$answers = array(
-			\Crypt::encrypt($this->id.'.correct_answer') => $this->correct_answer,
+			Crypt::encrypt($this->id.'.correct_answer') => $this->correct_answer,
 		);
 
 		foreach (range(1, 4) as $num)
 		{
 			if (!empty($this->{'incorrect_answer_'.$num}))
 			{
-				$answers[\Crypt::encrypt($this->id.'.incorrect_answer_'.$num)] = $this->{'incorrect_answer_'.$num};
+				$answers[Crypt::encrypt($this->id.'.incorrect_answer_'.$num)] = $this->{'incorrect_answer_'.$num};
 			}
 		}
 
@@ -320,7 +349,7 @@ class Competition extends \Eloquent {
 			$i++;
 		}
 
-		\Session::put('competitions.'.$this->id.'.answers', $answers);
+		Session::put('competitions.'.$this->id.'.answers', $answers);
 
 		return $answers;
 
@@ -347,7 +376,7 @@ class Competition extends \Eloquent {
 	 */
 	public function getAnswerField($answer)
 	{
-		$decryptedAnswerField = \Crypt::decrypt($answer);
+		$decryptedAnswerField = Crypt::decrypt($answer);
 		list($competitionId, $answerField) = explode('.', $decryptedAnswerField);
 		if ($competitionId != $this->id)
 		{
@@ -434,7 +463,7 @@ class Competition extends \Eloquent {
 		{
 			return false;
 		}
-		return !\Auth::check();
+		return !Auth::check();
 	}
 
 	/**
@@ -448,12 +477,12 @@ class Competition extends \Eloquent {
 		{
 			return false;
 		}
-		if (!\Auth::check())
+		if (!Auth::check())
 		{
 			return false;
 		}
 		$entryClass = $this->entries()->getModel();
-		return (bool)$entryClass::where('user_id', '=', \Auth::user()->id)
+		return (bool)$entryClass::where('user_id', '=', Auth::user()->id)
 			->where('competition_id', '=', $this->id)
 			->count();
 	}
@@ -472,7 +501,7 @@ class Competition extends \Eloquent {
 		$entry->is_correct = $this->isCorrect($input['answer']);
 		if ($this->requires_login)
 		{
-			$entry->user_id = \Auth::user()->id;
+			$entry->user_id = Auth::user()->id;
 		}
 		return $this->entries()->save($entry);
 	}

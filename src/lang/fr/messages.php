@@ -35,4 +35,10 @@ return array(
 		'label' => 'Share',
 	),
 
+	'closing_date' => array(
+		'format' => '%e %B %Y',
+		'locale' => 'fr',
+		'timezone' => 'Europe/Paris',
+	),
+
 );
